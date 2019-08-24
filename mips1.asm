@@ -51,6 +51,7 @@ main:
 	syscall
 	
 	beq $v0,1,registro
+	j regitrarDespesa
 	beq $v0,2,listar
 	beq $v0,3,excluir
 	beq $v0,4,exibir_mensal
@@ -87,4 +88,9 @@ exibir_rank_despesa:
 	li $v0,4
 	la $a0, tst6
 	syscall
+	j main
+	
+registrarDespesa:
+
+
 	j main
