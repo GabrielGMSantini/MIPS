@@ -17,7 +17,7 @@ entrouOp6:  .asciiz "entrou no 6\n\n\n\n"
 msgOp1_1:   .asciiz "Digite o valor da em reais da despesa\n"
 idBD: .byte 4
 
-array: .word 40
+array: .word 0
 tamArray: .byte 40
 posAtualArray: .byte 4
 
@@ -88,7 +88,7 @@ registro:
 	
 	
 	li $v0, 2
-	l.s $f12, 0($t0)
+	l.s $f12, 0($t0) #carreguei um float direto do vetor na posicao 
 	syscall
 	
 
