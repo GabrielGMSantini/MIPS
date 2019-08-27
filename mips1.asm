@@ -84,14 +84,15 @@ registro:
 	#f0 contem o valor lido
 	la  $t0, array #carreguei em t0 o end do vetor
 	
-	mfc1 $a0, $f0 #esta movendo do coprocessador1 o valor float para o registrador $a0
+	#mfc1 $a0, $f0 #esta movendo do coprocessador1 o valor float para o registrador $a0
+
 	
-	sw $a0, 0($t0)#gravando na pos 0
+	s.s  $f0, -1($t0)#gravando na pos 0
 	
 	
-	li $v0, 2
-	l.s $f12, 0($t0) #carreguei um float direto do vetor na posicao 
-	syscall
+	#li $v0, 2
+	#l.s $f12, 0($t0) #carreguei um float direto do vetor na posicao 
+	#syscall
 	
 
 	
