@@ -17,7 +17,7 @@ entrouOp6:  .asciiz "entrou no 6\n\n\n\n"
 msgOp1_1:   .asciiz "Digite o valor da em reais da despesa\n"
 idBD: .byte 4
 
-array: .word 0
+array: .space 50000
 tamArray: .byte 40
 posAtualArray: .byte 4
 
@@ -83,7 +83,9 @@ registro:
 	
 	#f0 contem o valor lido
 	la  $t0, array #carreguei em t0 o end do vetor
+	
 	mfc1 $a0, $f0 #esta movendo do coprocessador1 o valor float para o registrador $a0
+	
 	sw $a0, 0($t0)#gravando na pos 0
 	
 	
