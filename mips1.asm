@@ -1,5 +1,7 @@
 .data
-welcome:  .asciiz "welcome to the bank...!\n"
+array: .space 50000
+idBD: .word 0
+welcome:  .asciiz "\nwelcome to the bank...!\n"
 menu:     .asciiz "Choose from the following options:\n"
 opt1:  .asciiz "1) register expenses\n"
 opt2:  .asciiz "2) list the expenses\n"
@@ -14,10 +16,11 @@ entrouOp3:  .asciiz "entrou no 3\n"
 entrouOp4:  .asciiz "entrou no 4\n"
 entrouOp5:  .asciiz "entrou no 5\n"
 entrouOp6:  .asciiz "entrou no 6\n\n\n\n"
-msgOp1_1:   .asciiz "Digite o valor da em reais da despesa\n"
-idBD: .byte 4
 
-array: .space 50000
+msgOp1_1:   .asciiz "Digite o valor da em reais da despesa\n"
+
+
+
 tamArray: .byte 40
 posAtualArray: .byte 4
 
@@ -25,6 +28,8 @@ posAtualArray: .byte 4
 .text
 .globl main
 main:
+	la  $s0, array #carreguei em s0 o end inicial do vetor
+	la  $s1, array #carreguei em s1 o end final do vetor
 	
 	
 	li $v0, 4
@@ -73,27 +78,33 @@ registro:
 	syscall
 	#fim da gloriosa
 	
+	
+	
+	#ler ID 
+	lw $t0, idBD
+	addi $t0, $t0, 1
+	
+	sw $t0, 0($s1)
+	
+	addi $s1, $s1, 4 # andei 4 unidades com meu glorioso
+	
+	#lendo valor
 	li $v0, 4
 	la $a0, msgOp1_1
 	syscall
-	#lendo valor
 	
 	li $v0, 6
 	syscall
-	
 	#f0 contem o valor lido
-	la  $t0, array #carreguei em t0 o end do vetor
-	
 	#mfc1 $a0, $f0 #esta movendo do coprocessador1 o valor float para o registrador $a0
-
+	s.s  $f0, 0($s1)#gravando na pos do vetor o valor em float, esse comando é diretao sem necessidado do primeiro
 	
-	s.s  $f0, -1($t0)#gravando na pos 0
+	addi $s1, $s1, 4 # andei 4 unidades com meu glorioso
 	
-	
-	#li $v0, 2
-	#l.s $f12, 0($t0) #carreguei um float direto do vetor na posicao 
-	#syscall
-	
+	add $a0,$a0, $s1
+	li $a1, 16	
+	li $v0, 8
+	syscall
 
 	
 	j main
