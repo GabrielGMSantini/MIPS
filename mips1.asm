@@ -106,8 +106,21 @@ registro:
 	li $v0, 8
 	syscall
 	
-	addi $s1, $s1, 16 # andei 4 unidades com meu glorioso
-	
+	addi $s1, $s1, 16 # andei 16 unidades com meu glorioso
+	li $v0, 5 # leitura do dia
+	syscall
+	move $t0, $v0
+	sw $t0, 0($s1)	# salvamento do dia
+	addi $s1,$s1, 4	# andei 4 unidades
+	li $v0, 5	# leitura do mes
+	syscall
+	move $t0, $v0
+	sw $t0, 0($s1)	# salvamento do mes
+	addi $s1,$s1, 4	# andei 4 unidades
+	li $v0, 5	#leitura do ano
+	syscall
+	move $t0, $v0	
+	sw $t0, 0($s1)	#salvamento do ano
 	j menuzin
 listar:
 	li $v0,4
@@ -134,4 +147,3 @@ exibir_rank_despesa:
 	la $a0, entrouOp6
 	syscall
 	j menuzin
-	
