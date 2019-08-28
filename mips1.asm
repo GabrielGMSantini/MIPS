@@ -31,7 +31,7 @@ main:
 	la  $s0, array #carreguei em s0 o end inicial do vetor
 	la  $s1, array #carreguei em s1 o end final do vetor
 	
-	
+menuzin:	
 	li $v0, 4
 	la $a0, welcome
 	syscall
@@ -69,7 +69,7 @@ main:
 	beq $v0,4,exibir_mensal
 	beq $v0,5,exibir_categoria
 	beq $v0,6,exibir_rank_despesa
-	j main
+	j menuzin
 
 registro:
 	#Msg de entrada na func
@@ -101,36 +101,37 @@ registro:
 	
 	addi $s1, $s1, 4 # andei 4 unidades com meu glorioso
 	
-	add $a0,$a0, $s1
+	add $a0,$zero, $s1
 	li $a1, 16	
 	li $v0, 8
 	syscall
-
 	
-	j main
+	addi $s1, $s1, 16 # andei 4 unidades com meu glorioso
+	
+	j menuzin
 listar:
 	li $v0,4
 	la $a0, entrouOp2
 	syscall
-	j main
+	j menuzin
 excluir:
 	li $v0,4
 	la $a0, entrouOp3
 	syscall
-	j main
+	j menuzin
 exibir_mensal:
 	li $v0,4
 	la $a0, entrouOp4
 	syscall
-	j main
+	j menuzin
 exibir_categoria:
 	li $v0,4
 	la $a0, entrouOp5
 	syscall
-	j main
+	j menuzin
 exibir_rank_despesa:
 	li $v0,4
 	la $a0, entrouOp6
 	syscall
-	j main
+	j menuzin
 	
