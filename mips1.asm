@@ -1,6 +1,7 @@
 .data
 array: .space 50000
 idBD: .word 0
+ReadString .space 16
 welcome:  .asciiz "\nwelcome to the bank...!\n"
 menu:     .asciiz "Choose from the following options:\n"
 opt1:  .asciiz "1) register expenses\n"
@@ -23,6 +24,13 @@ msgOp1_2:   .asciiz "Digite o nome da categoria do gasto\n"
 msgOp1_3:   .asciiz "Digite o dia \n"
 msgOp1_4:   .asciiz "Digite o mes \n"
 msgOp1_5:   .asciiz "Digite o ano \n"
+
+Separacao:      .asciiz " | "
+Barra:		.asciiz "/"
+Espaco:		.asciiz " "
+Ponto:		.asciiz "."
+FimDeLinha:	.asciiz "\n"
+Zero:		.asciiz "0"
 
 tamArray: .byte 40
 posAtualArray: .byte 4
@@ -110,9 +118,9 @@ registro:
 	li $a1, 16	
 	li $v0, 8
 	syscall
-	
-	
 	addi $s1, $s1, 16 # andei 16 unidades com meu glorioso
+	
+	
 	#FIM da categoria
 	li $v0, 4
 	la $a0, msgOp1_3
@@ -147,7 +155,33 @@ listar:
 	li $v0,4
 	la $a0, entrouOp2
 	syscall
-	j menuzin
+	
+	add $t0, $zero, $zero
+	lw $t1, idBD
+	add $s3, $s0, $zero #s3 tera uma copia do endereco inicial do vetor
+LOOP:	
+	lw $t2, 0($s3)
+	add $a0, $t2,$zero 
+	li $v0, 1	#print do ID
+	syscall
+	
+	l.s $f12, 4($s3)
+	li $v0, 2	#print do valor
+	syscall
+	
+	lw $t2, 20($s3)
+	
+	li $v0, 4	#print string
+	syscall
+	
+	beq $t0, $t1, FIM #comparando se sao iguais
+	addi $t0, $t0, 1 #somando 1 ao meu i
+	j LOOP #pular para o loop
+	
+	
+FIM:
+
+j menuzin
 excluir:
 	li $v0,4
 	la $a0, entrouOp3
@@ -168,3 +202,28 @@ exibir_rank_despesa:
 	la $a0, entrouOp6
 	syscall
 	j menuzin
+	
+	
+PrintaEspaco:
+	li $v0, 4
+	la $a0, Espaco
+	syscall
+	jr $ra
+	
+PrintaBarra:
+	li $v0, 4
+	la $a0, Barra
+	syscall
+	jr $ra
+	
+PrintaPonto:
+	li $v0, 4
+	la $a0, Ponto
+	syscall
+	jr $ra
+	
+PrintaSeparacao:
+	li $v0, 4
+	la $a0, Separacao
+	syscall
+	jr $ra
