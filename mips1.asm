@@ -1,7 +1,7 @@
 .data
 array: .space 50000
 idBD: .word 0
-ReadString .space 16
+
 welcome:  .asciiz "\nwelcome to the bank...!\n"
 menu:     .asciiz "Choose from the following options:\n"
 opt1:  .asciiz "1) register expenses\n"
@@ -169,7 +169,8 @@ LOOP:
 	li $v0, 2	#print do valor
 	syscall
 	
-	lw $t2, 20($s3)
+	lw $a0, 20($s3)
+	
 	
 	li $v0, 4	#print string
 	syscall
