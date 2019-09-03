@@ -81,8 +81,7 @@ registro:
 	syscall
 	#fim da gloriosa
 	
-	
-	
+
 	#ler ID 
 	lw $t0, idBD
 	addi $t0, $t0, 1
