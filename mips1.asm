@@ -18,8 +18,11 @@ entrouOp5:  .asciiz "entrou no 5\n"
 entrouOp6:  .asciiz "entrou no 6\n\n\n\n"
 
 msgOp1_1:   .asciiz "Digite o valor da em reais da despesa\n"
+msgOp1_2:   .asciiz "Digite o nome da categoria do gasto\n"
 
-
+msgOp1_3:   .asciiz "Digite o dia \n"
+msgOp1_4:   .asciiz "Digite o mes \n"
+msgOp1_5:   .asciiz "Digite o ano \n"
 
 tamArray: .byte 40
 posAtualArray: .byte 4
@@ -101,26 +104,45 @@ registro:
 	
 	addi $s1, $s1, 4 # andei 4 unidades com meu glorioso
 	
+	li $v0, 4
+	la $a0, msgOp1_2
+	syscall
 	add $a0,$zero, $s1
 	li $a1, 16	
 	li $v0, 8
 	syscall
 	
+	
 	addi $s1, $s1, 16 # andei 16 unidades com meu glorioso
+	#FIM da categoria
+	li $v0, 4
+	la $a0, msgOp1_3
+	syscall
+	
 	li $v0, 5 # leitura do dia
 	syscall
 	move $t0, $v0
 	sw $t0, 0($s1)	# salvamento do dia
 	addi $s1,$s1, 4	# andei 4 unidades
+	#FIM DIA
+	li $v0, 4
+	la $a0, msgOp1_4
+	syscall
 	li $v0, 5	# leitura do mes
 	syscall
 	move $t0, $v0
 	sw $t0, 0($s1)	# salvamento do mes
 	addi $s1,$s1, 4	# andei 4 unidades
+	#FIM MES
+	li $v0, 4
+	la $a0, msgOp1_5
+	syscall
 	li $v0, 5	#leitura do ano
 	syscall
 	move $t0, $v0	
 	sw $t0, 0($s1)	#salvamento do ano
+	addi $s1,$s1, 4	# andei 4 unidades
+	#FIM ANO
 	j menuzin
 listar:
 	li $v0,4
