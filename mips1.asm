@@ -25,12 +25,13 @@ msgOp1_3:   .asciiz "Digite o dia \n"
 msgOp1_4:   .asciiz "Digite o mes \n"
 msgOp1_5:   .asciiz "Digite o ano \n"
 
-Separacao:      .asciiz " | "
-Barra:		.asciiz "/"
-Espaco:		.asciiz " "
-Ponto:		.asciiz "."
+Separacao1:      .asciiz " | "
+Separacao2:	      .asciiz " - "
+Barra:	.asciiz "/"
+Espaco:	.asciiz " "
+Ponto:	.asciiz "."
 FimDeLinha:	.asciiz "\n"
-Zero:		.asciiz "0"
+Zero:	.asciiz "0"
 
 tamArray: .byte 40
 posAtualArray: .byte 4
@@ -41,7 +42,6 @@ posAtualArray: .byte 4
 main:
 	la  $s0, array #carreguei em s0 o end inicial do vetor
 	la  $s1, array #carreguei em s1 o end final do vetor
-	
 menuzin:	
 	li $v0, 4
 	la $a0, welcome
@@ -70,10 +70,10 @@ menuzin:
 	li $v0,4
 	la $a0, quit
 	syscall
-	
+
 	li $v0, 5
 	syscall
-	
+
 	beq $v0,1,registro
 	beq $v0,2,listar
 	beq $v0,3,excluir
@@ -83,55 +83,54 @@ menuzin:
 	j menuzin
 
 registro:
-	#Msg de entrada na func
+#Msg de entrada na func
 	li $v0, 4
 	la $a0, entrouOp1
 	syscall
-	#fim da gloriosa
-	
+#fim da gloriosa
 
-	#ler ID 
+
+#ler ID 
 	lw $t0, idBD
 	addi $t0, $t0, 1
-	
+	sw $t0, idBD
+
 	sw $t0, 0($s1)
-	
+
 	addi $s1, $s1, 4 # andei 4 unidades com meu glorioso
-	
-	#lendo valor
+
+#lendo valor
 	li $v0, 4
 	la $a0, msgOp1_1
 	syscall
-	
+
 	li $v0, 6
 	syscall
-	#f0 contem o valor lido
-	#mfc1 $a0, $f0 #esta movendo do coprocessador1 o valor float para o registrador $a0
-	s.s  $f0, 0($s1)#gravando na pos do vetor o valor em float, esse comando Ã© diretao sem necessidado do primeiro
-	
-	addi $s1, $s1, 4 # andei 4 unidades com meu glorioso
-	
+#f0 contem o valor lido
+	mfc1 $a0, $f0 	#esta movendo do coprocessador1 o valor float para o registrador $a0
+	s.s  $f0, 0($s1)	#gravando na pos do vetor o valor em float, esse comando é diretao sem necessidado do primeiro
+	addi $s1, $s1, 4 	#andei 4 unidades com meu glorioso
+
 	li $v0, 4
 	la $a0, msgOp1_2
 	syscall
-	add $a0,$zero, $s1
+	add $a0,$s1,$zero
 	li $a1, 16	
 	li $v0, 8
 	syscall
-	addi $s1, $s1, 16 # andei 16 unidades com meu glorioso
-	
-	
-	#FIM da categoria
+	addi $s1, $s1, 16 	# andei 16 unidades com meu glorioso	
+
+#FIM da categoria
 	li $v0, 4
 	la $a0, msgOp1_3
 	syscall
-	
+
 	li $v0, 5 # leitura do dia
 	syscall
 	move $t0, $v0
 	sw $t0, 0($s1)	# salvamento do dia
 	addi $s1,$s1, 4	# andei 4 unidades
-	#FIM DIA
+#FIM DIA
 	li $v0, 4
 	la $a0, msgOp1_4
 	syscall
@@ -140,91 +139,117 @@ registro:
 	move $t0, $v0
 	sw $t0, 0($s1)	# salvamento do mes
 	addi $s1,$s1, 4	# andei 4 unidades
-	#FIM MES
+#FIM MES
 	li $v0, 4
 	la $a0, msgOp1_5
 	syscall
-	li $v0, 5	#leitura do ano
+	li $v0, 5				#leitura do ano
 	syscall
 	move $t0, $v0	
-	sw $t0, 0($s1)	#salvamento do ano
-	addi $s1,$s1, 4	# andei 4 unidades
-	#FIM ANO
+	sw $t0, 0($s1)			#salvamento do ano
+	addi $s1,$s1, 4		# andei 4 unidades
+#FIM ANO
 	j menuzin
-listar:
-	li $v0,4
-	la $a0, entrouOp2
-	syscall
 	
+listar:
+	la $s0, array
 	add $t0, $zero, $zero
 	lw $t1, idBD
-	add $s3, $s0, $zero #s3 tera uma copia do endereco inicial do vetor
+	sub $t1, $t1, 1
+	add $s3, $s0, $zero 	#s3 tera uma copia do endereco inicial do vetor
 LOOP:	
 	lw $t2, 0($s3)
 	add $a0, $t2,$zero 
-	li $v0, 1	#print do ID
+	li $v0, 1				#print do ID
 	syscall
-	
-	l.s $f12, 4($s3)
-	li $v0, 2	#print do valor
+	li $v0, 4
+	la $a0, Separacao2
 	syscall
-	
-	lw $a0, 20($s3)
-	
-	
-	li $v0, 4	#print string
+	addi $s3, $s3, 4
+
+	l.s $f12, 0($s3)
+	li $v0, 2				#print do valor
 	syscall
+	li $v0, 4
+	la $a0, Espaco
+	addi $s3, $s3, 4
+
+	la $a0, 0($s3)			#print string
+	li $v0, 4			
+	syscall
+	li $v0, 4				#print espaço
+	la $a0, Espaco
+	addi $s3, $s3, 16
+
+	lw $a0, 0($s3)			#print dia
+	li $v0, 1
+	syscall
+	addi $s3, $s3, 4
+		
+	lw $a0, 0($s3)			#print mes
+	li $v0, 1
+	syscall
+	addi $s3, $s3, 4
 	
-	beq $t0, $t1, FIM #comparando se sao iguais
-	addi $t0, $t0, 1 #somando 1 ao meu i
-	j LOOP #pular para o loop
+	lw $a0, 0($s3)			#print ano
+	li $v0, 1
+	syscall
+	addi $s3, $s3, 4
 	
+	li $v0, 4
+	la $a0, FimDeLinha
+	syscall
+
+	beq $t0, $t1, menuzin 	#comparando se sao iguais
+	addi $t0, $t0, 1 		#somando 1 ao meu i
+	j LOOP 				#pular para o loop
 	
 FIM:
-
-j menuzin
-excluir:
+	j menuzin
+	excluir:
 	li $v0,4
 	la $a0, entrouOp3
 	syscall
 	j menuzin
+	
 exibir_mensal:
 	li $v0,4
 	la $a0, entrouOp4
 	syscall
 	j menuzin
+	
 exibir_categoria:
 	li $v0,4
 	la $a0, entrouOp5
 	syscall
 	j menuzin
+	
 exibir_rank_despesa:
 	li $v0,4
 	la $a0, entrouOp6
 	syscall
 	j menuzin
-	
-	
+
 PrintaEspaco:
 	li $v0, 4
 	la $a0, Espaco
 	syscall
 	jr $ra
-	
+
 PrintaBarra:
 	li $v0, 4
 	la $a0, Barra
 	syscall
 	jr $ra
-	
+
 PrintaPonto:
 	li $v0, 4
 	la $a0, Ponto
 	syscall
 	jr $ra
-	
+
 PrintaSeparacao:
 	li $v0, 4
-	la $a0, Separacao
+	la $a0, Separacao1
 	syscall
 	jr $ra
