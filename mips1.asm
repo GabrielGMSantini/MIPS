@@ -26,7 +26,7 @@ msgOp1_4:   .asciiz "Digite o mes \n"
 msgOp1_5:   .asciiz "Digite o ano \n"
 
 Separacao1:      .asciiz " | "
-Separacao2:	      .asciiz " - "
+Separacao2:	      .asciiz "- "
 Barra:	.asciiz "/"
 Espaco:	.asciiz " "
 Ponto:	.asciiz "."
@@ -172,22 +172,31 @@ LOOP:
 	syscall
 	li $v0, 4
 	la $a0, Espaco
+	syscall
 	addi $s3, $s3, 4
+	
 
 	la $a0, 0($s3)			#print string
 	li $v0, 4			
 	syscall
 	li $v0, 4				#print espaço
 	la $a0, Espaco
+	syscall
 	addi $s3, $s3, 16
 
 	lw $a0, 0($s3)			#print dia
 	li $v0, 1
 	syscall
+	li $v0, 4
+	la $a0, Barra
+	syscall
 	addi $s3, $s3, 4
 		
 	lw $a0, 0($s3)			#print mes
 	li $v0, 1
+	syscall
+	li $v0, 4
+	la $a0, Barra
 	syscall
 	addi $s3, $s3, 4
 	
