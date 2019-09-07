@@ -1,6 +1,7 @@
 .data
 array: .space 50000
 idBD: .word 0
+bycate: .space 40000
 
 welcome:  .asciiz "\nwelcome to the bank...!\n"
 menu:     .asciiz "Choose from the following options:\n"
@@ -263,7 +264,7 @@ PrintaSeparacao:
 	syscall
 	jr $ra
 
-strcmp:
+strcmp: 	#compara duas strings, A>B retorna 2, B>A retorna 3, A=B retorna 0
 	la 	$s4,($sp) #address of stringB to $s4
 	addi 	$sp,$sp,-16
 	la 	$s3,($sp) #address of stringA to $s3
@@ -284,16 +285,85 @@ strcmp:
 	
 	AgB:
 		addi 	$sp,$sp,-4
-		li $t5,2
-		sw $t5,($sp)
+		li 	$t5,2
+		sw 	$t5,($sp)
 		jr 	$ra
 	BgA:
-		addi $sp,$sp,-4
-		li $t5,3
-		sw $t5,($sp)
-		jr $ra
+		addi 	$sp,$sp,-4
+		li 	$t5,3
+		sw 	$t5,($sp)
+		jr 	$ra
 	cmpeq:
-		addi $sp,$sp,-4
-		li $t5,1
-		sw $t5,($sp)
-		jr $ra
+		addi 	$sp,$sp,-4
+		li 	$t5,0
+		sw 	$t5,($sp)
+		jr 	$ra
+		
+strcpy:
+	la 	$s4,($sp) #address of stringB to $s4
+	addi 	$sp,$sp,-16
+	la 	$s3,($sp) #address of stringA to $s3
+	addi 	$sp,$sp,20
+	copyloop:
+		lb 	$t0,($s3)	#byte of stringA to $t0
+		sb 	$t0,($s4)	#byte of t0 to stringB
+		beqz 	$t0, endcpy	#if byte is \0, end
+		addi 	$s3,$s3,1	#walk a step with stringA
+		addi 	$s4,$s4,1	#walk a step with stringB
+		j 	copyloop	#loop
+	endcpy:
+		jr 	$ra
+
+dividebycategory:
+	la	$s5,($s0)	#array no $s5
+	la 	$s6,bycate 	#vetor bycate no $s6
+	addi	$sp,$sp,-4
+	la	$sp,($s6)	#pushando o endereço do vetor por categoria na pilha
+	divideloop1:
+		la	$s6,($sp)	#pegando o vetor por categoria da pilha
+		addi	$sp,$sp,4
+		beqz	$s5,enddivide
+		addi 	$s5,$s5,8	#$s5 na categoria da despesa
+		addi 	$sp,$sp,-4
+		la	$sp,($s6)
+		addi 	$sp,$sp,-4
+		la	$sp,($s5)
+		jal 	strcmp		#comparando as categorias
+		lw 	$t0,($sp)
+		addi 	$sp,$sp,4
+		beqz	$t0,iguais
+		j	diferentes
+	iguais:				#strings iguais
+		addi 	$s5,$s5,-4
+		l.s 	$f1,($s5)
+		addi 	$s6,$s6,16	#andando pra pegar a parte com float
+		l.s	$f2,($s6)
+		add.s	$f0,$f1,$f2	#bycate.float +=array.float
+		s.s	$f0,($s6)
+		la 	$s6,bycate
+		addi	$sp,$sp,-4
+		la	$sp,($s6)
+		addi	$s5,$s5,32
+		beqz 	$s5,enddivide
+		j	divideloop1
+	diferentes:			#strings diferentes
+		beqz	$s6,copystring	#se o vetor dividido por categorias estiver no fim, adicionar nova categoria
+		addi	$s5,$s5,-8	#volta pro começo da celula do struct
+		addi	$s6,$s6,20	#testar proxima posição do bycate
+		addi	$sp,$sp,-4
+		la	$sp,($s6)
+		j	divideloop1
+	copystring:
+		addi	$sp,$sp,-4
+		la	$sp,($ra)
+		addi 	$sp,$sp,-4
+		la	$sp,($s5)
+		addi	$sp,$sp,-4
+		la	$sp,($s6)
+		jal	strcpy
+		la	$ra,($sp)
+		addi	$sp,$sp,4
+		j	iguais
+		
+	enddivide:
+	jr	$ra
