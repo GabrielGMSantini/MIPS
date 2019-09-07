@@ -214,6 +214,20 @@ LOOP:
 	addi $t0, $t0, 1 		#somando 1 ao meu i
 	j LOOP 				#pular para o loop
 	
+excluir:
+	la $s4, array
+	li $v0, 5				# leitura do ID
+	syscall
+	move $t0, $v0
+next:
+	beq $t0, $s4, find		
+	add $s4, $s4, 36		#procura de 36 em 36
+	j next
+find:
+	addi $t1, $s4, $zero	
+	add $s4, $s4, 36
+	j find
+	
 FIM:
 	j menuzin
 	excluir:
