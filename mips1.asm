@@ -108,7 +108,7 @@ registro:
 	syscall
 #f0 contem o valor lido
 	mfc1 $a0, $f0 	#esta movendo do coprocessador1 o valor float para o registrador $a0
-	s.s  $f0, 0($s1)	#gravando na pos do vetor o valor em float, esse comando é diretao sem necessidado do primeiro
+	s.s  $f0, 0($s1)	#gravando na pos do vetor o valor em float, esse comando Ã© diretao sem necessidado do primeiro
 	addi $s1, $s1, 4 	#andei 4 unidades com meu glorioso
 
 	li $v0, 4
@@ -179,7 +179,7 @@ LOOP:
 	la $a0, 0($s3)			#print string
 	li $v0, 4			
 	syscall
-	li $v0, 4				#print espaço
+	li $v0, 4				#print espaÃ§o
 	la $a0, Espaco
 	syscall
 	addi $s3, $s3, 16
@@ -262,3 +262,38 @@ PrintaSeparacao:
 	la $a0, Separacao1
 	syscall
 	jr $ra
+
+strcmp:
+	la 	$s4,($sp) #address of stringB to $s4
+	addi 	$sp,$sp,-16
+	la 	$s3,($sp) #address of stringA to $s3
+	addi 	$sp,$sp,20
+	cmpl1:
+		lb 	$t2,($s3) 
+		lb 	$t3,($s4)
+		bne 	$t2,$t3,	cmpne #if character of stringA not equal character of stringB
+		
+		beq 	$t2,$zero,cmpeq	#if it's the end of string
+		addi 	$s3,$s3,1 #test next character
+		addi 	$s4,$s4,1 #test next character
+		j 	cmpl1
+	cmpne:
+		slt 	$t5,$s3,$s4	#if character from stringA is greater than character from stringB
+		bne 	$t5,$zero,AgB
+		j 	BgA	#else
+	
+	AgB:
+		addi 	$sp,$sp,-4
+		li $t5,2
+		sw $t5,($sp)
+		jr 	$ra
+	BgA:
+		addi $sp,$sp,-4
+		li $t5,3
+		sw $t5,($sp)
+		jr $ra
+	cmpeq:
+		addi $sp,$sp,-4
+		li $t5,1
+		sw $t5,($sp)
+		jr $ra
