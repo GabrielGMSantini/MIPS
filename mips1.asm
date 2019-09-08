@@ -343,7 +343,7 @@ dividebycategory:
 		beq	$t0,$zero,newcategory	#se estiver no final de bycate, criar nova categoria
 		#senão, andar com o bycate
 		addi	$s5,$s3,-8	#volta o vetor pro inicio da struct
-		addi	$s6,$s4,22	#ir pro proximo struct de bycate
+		addi	$s6,$s4,20	#ir pro proximo struct de bycate
 		j	divideloop1	
 	iguais:
 		addi	$s3,$s3,-4	#volta pra a parte float
@@ -356,6 +356,9 @@ dividebycategory:
 		addi	$s5,$s3,32	#anda com o array até a proxima posição
 		j	divideloop1
 	newcategory:
+		lw	$t1,numcate
+		addi	$t1,$t1,1
+		sw	$t1,numcate
 		addi	$sp,$sp,-4	#anda com a stack
 		sw	$ra,($sp)	#coloca o endereço de retorno na stack
 		jal	strcpy
@@ -367,3 +370,52 @@ dividebycategory:
 		j	iguais		#como a string foi copiada, agora elas são iguais
 	enddivide:
 		jr	$ra		#volta pra onde chamou
+		
+printbycate:
+	la	$s3,bycate	#$s3 recebe o inicio do struct por categoria
+	lw	$s7,numcate	#$s7 recebe o numero de categorias
+	li	$s6,0	#$s6 recebe 0 (ele vai ser o contador)
+	loopprintcate:
+		#print nome categoria
+		la 	$a0, 0($s3)			
+		li 	$v0, 4			
+		syscall
+		li 	$v0, 4				
+		la 	$a0, Espaco
+		syscall
+		addi 	$s3, $s3, 16
+		#print valor categoria
+		l.s 	$f12, 0($s3)
+		li 	$v0, 2				#
+		syscall
+		li 	$v0, 4
+		la 	$a0, Espaco
+		syscall
+		li 	$v0, 4
+		la 	$a0, FimDeLinha
+		syscall
+		addi 	$s3, $s3, 4
+		addi	$s6,$s6,1		#soma 1 no contador
+		beq	$s6,$s7,fimprintcate	#ve se chegou no fim
+		j	loopprintcate
+	fimprintcate:
+		addi	$sp,$sp,-4
+		sw	$ra,($sp)
+		jal	zerarbycate	#zera o vetor bycate
+		lw	$ra,($sp)
+		addi	$sp,$sp,4
+		jr 	$ra
+
+zerarbycate:
+	lw	$s7,numcate	#$s7 tem o numero de categorias
+	mul	$s7,$s7,20	#$s7 tem o numero de bytes que tem que zerar
+	la	$s6,bycate	#$s6 tem o inicio do bycate
+	add	$s7,$s7,$s6	#$s7 tem o endereço do final do bycate
+	loopzerar:
+		beq	$s7,$s6,endzerar	#se for o fim do que tem que zerar
+		sb	$zero,($s6)	#zera o bit
+		addi	$s6,$s6,1	#anda com o registrador $s6
+		j	loopzerar	
+	endzerar:
+		sw	$zero,numcate
+		jr	$ra
