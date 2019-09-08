@@ -244,18 +244,15 @@ exibir_mensal:
 	j menuzin
 	
 exibir_categoria:
-	li $v0,4
-	la $a0, entrouOp5
-	syscall
 	jal	dividebycategory
 	jal	sortbycatealpha
 	jal	printbycate
 	j menuzin
 	
 exibir_rank_despesa:
-	li $v0,4
-	la $a0, entrouOp6
-	syscall
+	jal	dividebycategory
+	jal	sortbycaterank
+	jal	printbycate
 	j menuzin
 
 PrintaEspaco:
@@ -293,7 +290,9 @@ strcmp:			#compara duas strings,A e B, salvas em $s3 e $s4, e retorna qual vem d
 		addi 	$s4,$s4,1 #test next character
 		j 	cmpl1
 	cmpne:
-		slt 	$t5,$s3,$s4	#if character from stringA is greater than character from stringB
+		lb	$t1,($s3)
+		lb	$t2,($s4)
+		slt 	$t5,$t1,$t2	#if character from stringA is greater than character from stringB
 		bne 	$t5,$zero,AgB
 		j 	BgA	#else
 	
@@ -335,7 +334,7 @@ dividebycategory:
 		addi	$sp,$sp,-4	#anda com a stack
 		sw	$ra,($sp)	#coloca o $ra na stack
 		jal	strcmp		#compara pra ver se eles são iguais
-		lw	$t0,($sp)	#pega o retorno do strcpy
+		lw	$t0,($sp)	#pega o retorno do strcmp
 		lw	$ra,4($sp)	#pega o endereço de retorno da stack
 		addi	$sp,$sp,8	#volta para a posição inicial da stack
 		la	$s4,($s6)	#$s4 tem o endereço de onde está o vetor bycate
@@ -446,7 +445,7 @@ sortbycatealpha:
 			lw	$t1,($sp)	#pega o retorno da comparação
 			lw	$ra,4($sp)	#restaura o endereço de retorno
 			addi	$sp,$sp,8	#restaura a stack pro inicio
-			beq	$t1,2,swapalpha	#se V[j] > V[j+1], troca
+			beq	$t1,3,swapalpha	#se V[j] > V[j+1], troca
 			addi	$s6,$s6,-20	#j--
 			j	loopsortalpha2
 		
@@ -474,4 +473,50 @@ sortbycatealpha:
 			la	$s6,($s7)	#j=N-2
 			addi	$s5,$s5,20	#i++
 			j	loopsortalpha1
-	
+
+sortbycaterank:
+	la	$s5,bycate		#endereço de bycate em $s5
+	lw	$t1,numcate		#numero de categorias em $t1
+	mul	$t1,$t1,20		#numero de bytes de bycate
+	add	$s6,$s5,$t1		#$s6 tem o endereço do final de bycate
+	addi	$s6,$s6,-40		#$s6 fica com o endereço de N-2
+	la	$s7,($s6)		#$s7 guarda $s6, que é N-2
+	loopsortrank1:
+		la	$s4,20($s7)	#$s4 tem a posição do vetor em N-1
+		slt	$t1,$s5,$s4	#se i<N-1
+		bnez	$t1,loopsortrank2
+		jr	$ra	#sai da função	
+		loopsortrank2:
+			la	$s3,($s6)	#$s3 tem a posição do vetor em j
+			blt	$s3,$s5,acertarregistrank	#sair do loop 2 e acertar os registradores se j<i
+			la	$s4,20($s6)	#$s4 tem a posição do vetor em j+1
+			l.s	$f1,16($s3)	#$f1 tem a parte float de j
+			l.s	$f2,16($s4)	#$f2 tem a parte float de j+1
+			c.lt.s	$f1,$f2		#compara se a parte float de j é menor que a parte float de j+1
+			bc1t	swaprank
+			addi	$s6,$s6,-20	#j--
+			j	loopsortrank2
+		swaprank:
+			la	$s3,($s6)	#$s3 tem a posição do vetor em j
+			la	$s4,20($s6)	#$s4 tem a posição do vetor em j+1
+			li	$t1,20
+			sw	$t1,-4($sp)
+			loopswaprank:
+				lb	$t1,($s3)	#pega o byte em $s3 e salva em $t1
+				lb	$t2,($s4)	#pega o byte em $s4 e salva em $t2
+				sb	$t1,($s4)	#pega o byte que era de $s3 e salva em $s4
+				sb	$t2,($s3)	#pega o byte que era de $s4 e salva em $s3
+				addi	$s3,$s3,1
+				addi	$s4,$s4,1
+				lw	$t1,-4($sp)
+				addi	$t1,$t1,-1	#diminui no contador
+				beqz	$t1,endswaprank	#se for zero
+				sw	$t1,-4($sp)
+				j	loopswaprank
+			endswaprank:
+				addi	$s6,$s6,-20	#j--
+				j	loopsortrank2
+		acertarregistrank:
+			la	$s6,($s7)	#j=N-2
+			addi	$s5,$s5,20	#i++
+			j	loopsortrank1
