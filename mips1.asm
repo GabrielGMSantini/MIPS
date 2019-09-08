@@ -1,6 +1,7 @@
 .data
 array: .space 50000
 idBD: .word 0
+numcate:	.word 0
 bycate: .space 40000
 
 welcome:  .asciiz "\nwelcome to the bank...!\n"
