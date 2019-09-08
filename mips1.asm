@@ -278,15 +278,11 @@ PrintaSeparacao:
 	syscall
 	jr $ra
 
-strcmp: 	#compara duas strings, A>B retorna 2, B>A retorna 3, A=B retorna 0
-	la 	$s4,($sp) #address of stringB to $s4
-	addi 	$sp,$sp,-16
-	la 	$s3,($sp) #address of stringA to $s3
-	addi 	$sp,$sp,20
+strcmp:			#compara duas strings,A e B, salvas em $s3 e $s4, e retorna qual vem depois, na ordem alfabetica, ou se elas são iguais
 	cmpl1:
 		lb 	$t2,($s3) 
 		lb 	$t3,($s4)
-		bne 	$t2,$t3,	cmpne #if character of stringA not equal character of stringB
+		bne 	$t2,$t3,cmpne #if character of stringA not equal character of stringB
 		
 		beq 	$t2,$zero,cmpeq	#if it's the end of string
 		addi 	$s3,$s3,1 #test next character
@@ -314,10 +310,6 @@ strcmp: 	#compara duas strings, A>B retorna 2, B>A retorna 3, A=B retorna 0
 		jr 	$ra
 		
 strcpy:
-	la 	$s4,($sp) #address of stringB to $s4
-	addi 	$sp,$sp,-16
-	la 	$s3,($sp) #address of stringA to $s3
-	addi 	$sp,$sp,20
 	copyloop:
 		lb 	$t0,($s3)	#byte of stringA to $t0
 		sb 	$t0,($s4)	#byte of t0 to stringB
@@ -329,55 +321,49 @@ strcpy:
 		jr 	$ra
 
 dividebycategory:
-	la	$s5,($s0)	#array no $s5
-	la 	$s6,bycate 	#vetor bycate no $s6
-	addi	$sp,$sp,-4
-	la	$sp,($s6)	#pushando o endereço do vetor por categoria na pilha
+	la	$s5,array	#$s5 tem o inicio da array
+	la	$s6,bycate	#$s6 tem o inicio da divisão por categoria
 	divideloop1:
-		la	$s6,($sp)	#pegando o vetor por categoria da pilha
-		addi	$sp,$sp,4
-		beqz	$s5,enddivide
-		addi 	$s5,$s5,8	#$s5 na categoria da despesa
-		addi 	$sp,$sp,-4
-		la	$sp,($s6)
-		addi 	$sp,$sp,-4
-		la	$sp,($s5)
-		jal 	strcmp		#comparando as categorias
-		lw 	$t0,($sp)
-		addi 	$sp,$sp,4
-		beqz	$t0,iguais
-		j	diferentes
-	iguais:				#strings iguais
-		addi 	$s5,$s5,-4
-		l.s 	$f1,($s5)
-		addi 	$s6,$s6,16	#andando pra pegar a parte com float
-		l.s	$f2,($s6)
-		add.s	$f0,$f1,$f2	#bycate.float +=array.float
-		s.s	$f0,($s6)
-		la 	$s6,bycate
-		addi	$sp,$sp,-4
-		la	$sp,($s6)
-		addi	$s5,$s5,32
-		beqz 	$s5,enddivide
+		la	$s4,($s6)	#$s4 tem o endereço de onde está o vetor bycate
+		la	$s3,($s5)	#$s3 tem o endereço de onde está o vetor array
+		beq	$s3,$s1,enddivide	#se estiver no final do vetor, terminar a função
+		addi	$s3,$s3,8	#chega na parte de categorias do struct despesa
+		addi	$sp,$sp,-4	#anda com a stack
+		sw	$ra,($sp)	#coloca o $ra na stack
+		jal	strcmp		#compara pra ver se eles são iguais
+		lw	$t0,($sp)	#pega o retorno do strcpy
+		lw	$ra,4($sp)	#pega o endereço de retorno da stack
+		addi	$sp,$sp,8	#volta para a posição inicial da stack
+		la	$s4,($s6)	#$s4 tem o endereço de onde está o vetor bycate
+		la	$s3,($s5)	#$s3 tem o endereço de onde está o vetor array
+		addi	$s3,$s3,8	#chega na parte de categorias do struct despesa
+		beqz	$t0,iguais	#se elas forem iguais
+	#diferentes
+		lb	$t0,($s4)
+		beq	$t0,$zero,newcategory	#se estiver no final de bycate, criar nova categoria
+		#senão, andar com o bycate
+		addi	$s5,$s3,-8	#volta o vetor pro inicio da struct
+		addi	$s6,$s4,22	#ir pro proximo struct de bycate
+		j	divideloop1	
+	iguais:
+		addi	$s3,$s3,-4	#volta pra a parte float
+		addi	$s4,$s4,16	#vai pra a parte float
+		l.s	$f1,($s3)	#pega o float do array
+		l.s	$f2,($s4)	#pega o float do bycate
+		add.s	$f0,$f1,$f2	#soma eles
+		s.s	$f0,($s4)	#salva o resultado no bycate
+		la	$s6,bycate	#volta pro inicio do bycate
+		addi	$s5,$s3,32	#anda com o array até a proxima posição
 		j	divideloop1
-	diferentes:			#strings diferentes
-		beqz	$s6,copystring	#se o vetor dividido por categorias estiver no fim, adicionar nova categoria
-		addi	$s5,$s5,-8	#volta pro começo da celula do struct
-		addi	$s6,$s6,20	#testar proxima posição do bycate
-		addi	$sp,$sp,-4
-		la	$sp,($s6)
-		j	divideloop1
-	copystring:
-		addi	$sp,$sp,-4
-		la	$sp,($ra)
-		addi 	$sp,$sp,-4
-		la	$sp,($s5)
-		addi	$sp,$sp,-4
-		la	$sp,($s6)
+	newcategory:
+		addi	$sp,$sp,-4	#anda com a stack
+		sw	$ra,($sp)	#coloca o endereço de retorno na stack
 		jal	strcpy
-		la	$ra,($sp)
-		addi	$sp,$sp,4
-		j	iguais
-		
+		lw	$ra,($sp)	#desempilha o endereço de retorno
+		addi	$sp,$sp,4	#retorna a pilha pro inicio dela
+		la	$s4,($s6)	#$s4 tem o endereço de onde está o vetor bycate
+		la	$s3,($s5)	#$s3 tem o endereço de onde está o vetor array
+		addi	$s3,$s3,8	#chega na parte de categorias do struct despesa
+		j	iguais		#como a string foi copiada, agora elas são iguais
 	enddivide:
-	jr	$ra
+		jr	$ra		#volta pra onde chamou
