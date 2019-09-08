@@ -247,6 +247,8 @@ exibir_categoria:
 	li $v0,4
 	la $a0, entrouOp5
 	syscall
+	jal	dividebycategory
+	jal	printbycate
 	j menuzin
 	
 exibir_rank_despesa:
