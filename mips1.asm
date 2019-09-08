@@ -248,6 +248,7 @@ exibir_categoria:
 	la $a0, entrouOp5
 	syscall
 	jal	dividebycategory
+	jal	sortbycatealpha
 	jal	printbycate
 	j menuzin
 	
@@ -422,3 +423,55 @@ zerarbycate:
 	endzerar:
 		sw	$zero,numcate
 		jr	$ra
+
+sortbycatealpha:
+	la	$s5,bycate		#endereço de bycate em $s5
+	lw	$t1,numcate		#numero de categorias em $t1
+	mul	$t1,$t1,20		#numero de bytes de bycate
+	add	$s6,$s5,$t1		#$s6 tem o endereço do final de bycate
+	addi	$s6,$s6,-40		#$s6 fica com o endereço de N-2
+	la	$s7,($s6)		#$s7 guarda $s6, que é N-2
+	loopsortalpha1:
+		la	$s4,20($s7)	#$s4 tem a posição do vetor em N-1
+		slt	$t1,$s5,$s4	#se i<N-1
+		bnez	$t1,loopsortalpha2
+		jr	$ra	#sai da função
+		loopsortalpha2:
+			la	$s3,($s6)	#$s3 tem a posição do vetor em j
+			blt	$s3,$s5,acertarregistsalpha	#sair do loop 2 e acertar os registradores se j<i
+			la	$s4,20($s6)	#$s4 tem a posição do vetor em j+1
+			addi	$sp,$sp,-4
+			sw	$ra,($sp)	#salva o endereço de retorno na stack
+			jal	strcmp		#compara as strings
+			lw	$t1,($sp)	#pega o retorno da comparação
+			lw	$ra,4($sp)	#restaura o endereço de retorno
+			addi	$sp,$sp,8	#restaura a stack pro inicio
+			beq	$t1,2,swapalpha	#se V[j] > V[j+1], troca
+			addi	$s6,$s6,-20	#j--
+			j	loopsortalpha2
+		
+		swapalpha:
+			la	$s3,($s6)	#$s3 tem a posição do vetor em j
+			la	$s4,20($s6)	#$s4 tem a posição do vetor em j+1
+			li	$t1,20
+			sw	$t1,-4($sp)
+			loopswapalpha:
+				lb	$t1,($s3)	#pega o byte em $s3 e salva em $t1
+				lb	$t2,($s4)	#pega o byte em $s4 e salva em $t2
+				sb	$t1,($s4)	#pega o byte que era de $s3 e salva em $s4
+				sb	$t2,($s3)	#pega o byte que era de $s4 e salva em $s3
+				addi	$s3,$s3,1
+				addi	$s4,$s4,1
+				lw	$t1,-4($sp)
+				addi	$t1,$t1,-1	#diminui no contador
+				beqz	$t1,endswapalpha	#se for zero
+				sw	$t1,-4($sp)
+				j	loopswapalpha
+			endswapalpha:
+				addi	$s6,$s6,-20	#j--
+				j	loopsortalpha2
+		acertarregistsalpha:
+			la	$s6,($s7)	#j=N-2
+			addi	$s5,$s5,20	#i++
+			j	loopsortalpha1
+	
