@@ -80,7 +80,7 @@ menuzin:
 
 	beq $v0,1,registro
 	beq $v0,2,listar
-	beq $v0,3,excluir
+	beq $v0,3,exclude
 	beq $v0,4,exibir_mensal
 	beq $v0,5,exibir_categoria
 	beq $v0,6,exibir_rank_despesa
@@ -162,6 +162,7 @@ listar:
 	sub $t1, $t1, 1
 	add $s3, $s0, $zero 	#s3 tera uma copia do endereco inicial do vetor
 LOOP:	
+	beq $s0, $s1, menuzin
 	lw $t2, 0($s3)
 	add $a0, $t2,$zero 
 	li $v0, 1				#print do ID
@@ -212,28 +213,36 @@ LOOP:
 	li $v0, 4
 	la $a0, FimDeLinha
 	syscall
-
-	beq $t0, $t1, menuzin 	#comparando se sao iguais
-	addi $t0, $t0, 1 		#somando 1 ao meu i
-	j LOOP 				#pular para o loop
+	beq $s3, $s1, menuzin			#somando 1 ao meu i
+	j LOOP 					#pular para o loop
 	
-excluir:
+exclude:
 	la $s4, array
 	li $v0, 5				# leitura do ID
 	syscall
-	move $t0, $v0
+	move $s7, $v0
 next:
-	beq $t0, $s4, find		
-	add $s4, $s4, 36		#procura de 36 em 36
+	lw $t1,($s4)
+	beq $s7, $t1, find		
+	addi $s4, $s4, 36			#procura de 36 em 36
 	j next
 find:
-	add $t1, $s4, $zero	
-	add $s4, $s4, 36
+	addi $s5, $s4, 36
+	beq $s5, $s1, corta
+	lb $t1,($s4)
+	lb $t2,($s5)
+	sb $t1,($s5)
+	sb $t2,($s4)
+	addi $s4, $s4, 1
+	addi $s5, $s5, 1
+	beq $s5, $s1, corta
 	j find
-	
+corta:
+	addi $s1, $s1, -36
+	j menuzin
 FIM:
 	j menuzin
-	exclude:
+	excluir:
 	li $v0,4
 	la $a0, entrouOp3
 	syscall
