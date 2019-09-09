@@ -2,7 +2,9 @@
 array: .space 50000
 idBD: .word 0
 numcate:	.word 0
-bycate: .space 40000
+bycate: .space 25000
+bymon:	.space 25000
+nummon: .word 0
 
 welcome:  .asciiz "\nwelcome to the bank...!\n"
 menu:     .asciiz "Choose from the following options:\n"
@@ -225,22 +227,21 @@ next:
 	add $s4, $s4, 36		#procura de 36 em 36
 	j next
 find:
-	addi $t1, $s4, $zero	
+	add $t1, $s4, $zero	
 	add $s4, $s4, 36
 	j find
 	
 FIM:
 	j menuzin
-	excluir:
+	exclude:
 	li $v0,4
 	la $a0, entrouOp3
 	syscall
 	j menuzin
 	
 exibir_mensal:
-	li $v0,4
-	la $a0, entrouOp4
-	syscall
+	jal	dividebymon
+	jal	printbymon
 	j menuzin
 	
 exibir_categoria:
@@ -520,3 +521,100 @@ sortbycaterank:
 			la	$s6,($s7)	#j=N-2
 			addi	$s5,$s5,20	#i++
 			j	loopsortrank1
+	
+dividebymon:
+	la	$s5,array	#$s5 tem o inicio da array
+	la	$s6,bymon	#$s6 tem o inicio da divisão por mês
+	divideloop2:
+		la	$s4,($s6)	#$s4 tem o endereço de onde está o vetor bymon
+		la	$s3,($s5)	#$s3 tem o endereço de onde está o vetor array
+		beq	$s3,$s1,enddivide	#se estiver no final do vetor, terminar a função
+		lw	$t1,($s4)
+		beqz	$t1,newmon	#se estiver no fim de bymon, registrar novo mês
+		lw	$t1,32($s3)	#pega a parte do struct que tem o ano de array
+		lw	$t2,4($s4)	#pega a parte do struct que tem o ano de bymon
+		beq	$t1,$t2,anosiguais	#ver se os anos são iguais
+		#	diferentes
+		addi	$s6,$s6,12		#anda com bymon
+		j	divideloop2
+		anosiguais:
+			lw	$t1,28($s3)	#pega a parte do struct que tem o mes do array
+			lw	$t2,($s4)	#pega a parte do struct que tem o mes de bymon
+			beq	$t1,$t2,atualizarmon
+			#	diferentes
+			addi	$s6,$s6,12		#anda com bymon
+			j	divideloop2
+		newmon:
+			lw	$t1,28($s3)	#pega o mes
+			sw	$t1,($s4)	#salva no começo da nova celula mês
+			lw	$t1,32($s3)	#pega o ano
+			sw	$t1,4($s4)	#salva depois do mês da nova celula
+			l.s	$f1,4($s3)	#pega a despesa
+			s.s	$f1,8($s4)	#salva na parte float
+			lw	$t1,nummon
+			addi	$t1,$t1,1
+			sw	$t1,nummon
+			addi	$s5,$s5,36	#vai pro proximo endereço do array
+			la	$s6,bymon	#restaura bymon pro começo
+			j	divideloop2
+		atualizarmon:
+			l.s	$f1,4($s3)	#pega a despésa
+			l.s	$f2,8($s4)	#pega os gastos do mês
+			add.s	$f0,$f1,$f2	#soma as despesas
+			s.s	$f0,8($s4)	#salva em bymon
+			addi	$s5,$s5,36	#anda com o vetor
+			la	$s6,bymon	#restaura bymon pro começo
+			j	divideloop2
+		
+printbymon:
+	la	$s3,bymon	#$s3 recebe o inicio do struct por mes
+	lw	$s7,nummon	#$s7 recebe o numero de meses
+	li	$s6,0	#$s6 recebe 0 (ele vai ser o contador)
+		loopprintbymon:
+		#printa	mes
+		lw 	$a0, 0($s3)			
+		li 	$v0, 1
+		syscall
+		li 	$v0, 4
+		la 	$a0, Barra
+		syscall
+		addi 	$s3, $s3, 4
+		#print ano
+		lw 	$a0, 0($s3)			
+		li 	$v0, 1
+		syscall
+		addi 	$s3, $s3, 4		
+		li 	$v0, 4
+		la 	$a0, Espaco
+		syscall
+		l.s 	$f12, 0($s3)
+		li 	$v0, 2				#
+		syscall	
+		li 	$v0, 4
+		la 	$a0, FimDeLinha
+		syscall
+		addi 	$s3, $s3, 4
+		addi	$s6,$s6,1		#soma 1 no contador
+		bge	$s6,$s7,fimprintmon	#ve se chegou no fim
+		j	loopprintbymon
+	fimprintmon:
+		addi	$sp,$sp,-4
+		sw	$ra,($sp)
+		jal	zerarbymon	#zera o vetor bycate
+		lw	$ra,($sp)
+		addi	$sp,$sp,4
+		jr 	$ra	
+			
+zerarbymon:
+	lw	$s7,nummon	#$s7 tem o numero de meses
+	mul	$s7,$s7,12	#$s7 tem o numero de bytes que tem que zerar
+	la	$s6,bymon	#$s6 tem o inicio do bymon
+	add	$s7,$s7,$s6	#$s7 tem o endereço do final do bymon
+	loopzerarmon:
+		beq	$s7,$s6,endzerarmon	#se for o fim do que tem que zerar
+		sb	$zero,($s6)	#zera o bit
+		addi	$s6,$s6,1	#anda com o registrador $s6
+		j	loopzerarmon	
+	endzerarmon:
+		sw	$zero,nummon
+		jr	$ra		
