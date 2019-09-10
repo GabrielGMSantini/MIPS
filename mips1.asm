@@ -15,12 +15,6 @@ opt4:  .asciiz "4) show monthly expenses\n"
 opt5:  .asciiz "5) show expenses sorted by category\n"
 opt6:  .asciiz "6) rank the expenses\n"
 quit:  .asciiz "7) quit\n"
-entrouOp1:  .asciiz "entrou no 1\n"
-entrouOp2:  .asciiz "entrou na 2\n"
-entrouOp3:  .asciiz "entrou no 3\n"
-entrouOp4:  .asciiz "entrou no 4\n"
-entrouOp5:  .asciiz "entrou no 5\n"
-entrouOp6:  .asciiz "entrou no 6\n\n\n\n"
 
 msgOp1_1:   .asciiz "Digite o valor da em reais da despesa\n"
 msgOp1_2:   .asciiz "Digite o nome da categoria do gasto\n"
@@ -28,6 +22,8 @@ msgOp1_2:   .asciiz "Digite o nome da categoria do gasto\n"
 msgOp1_3:   .asciiz "Digite o dia \n"
 msgOp1_4:   .asciiz "Digite o mes \n"
 msgOp1_5:   .asciiz "Digite o ano \n"
+
+msg_exclusion: .asciiz "Digite o ID do elemento que voce deseja excluir"
 
 Separacao1:      .asciiz " | "
 Separacao2:	      .asciiz "- "
@@ -87,12 +83,6 @@ menuzin:
 	j menuzin
 
 registro:
-#Msg de entrada na func
-	li $v0, 4
-	la $a0, entrouOp1
-	syscall
-#fim da gloriosa
-
 
 #ler ID 
 	lw $t0, idBD
@@ -215,6 +205,9 @@ LOOP:
 	j LOOP 					#pular para o loop
 	
 exclude:
+	li $v0, 4
+	la $a0, msg_exclusion
+	syscall
 	la $s4, array
 	li $v0, 5				# leitura do ID
 	syscall
@@ -241,8 +234,6 @@ corta:
 FIM:
 	j menuzin
 	excluir:
-	li $v0,4
-	la $a0, entrouOp3
 	syscall
 	j menuzin
 	
